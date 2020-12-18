@@ -1,42 +1,27 @@
-const socket = io('/');
-let vidGrid = document.getElementById('video-grid');
-const peer = new Peer(undefined, {
-    host: '/',
-    port: '3001'
-})
-
-let myVideo = document.createElement('video');
-myVideo.muted = true;
-
-const peers = {};
-
+const socket = io('/')
+const videoGrid = document.getElementById('video-grid')
+const peer = new Peer();
+const myVid = document.createElement('video')
+myVid.muted = true
+const peers = {}
 navigator.mediaDevices.getUserMedia({
     video: true,
     audio: true
 }).then(stream => {
-    addVidStream(myVideo, stream);
+    addVideoStream(myVid, stream)
 
-    peer.on('call', (call) => {
-        call.answer(stream);
-        const vid = document.createElement('video');
-        call.on('stream', returnStream => {
-            addVidStream(vid, returnStream);
-        });
-        call.on('close', () => {
-            vid.remove();
+    peer.on('call', call => {
+        call.answer(stream)
+        const video = document.createElement('video')
+        call.on('stream', userVideoStream => {
+            addVideoStream(video, userVideoStream)
         })
     })
 
-    socket.on('user-connected', user_ID => {
-        connectToUser(user_ID, stream);
-    });
-});
-
-peer.on('open', (id) => {
-    socket.emit('join-room', roomID, id);
-});
-
-
+    socket.on('user-connected', userId => {
+        connectToNewUser(userId, stream)
+    })
+})
 
 socket.on('user-connected', (userID) => {
     let announceDiv = document.getElementById('announcements');
@@ -55,22 +40,27 @@ socket.on('user-disconnected', (userID) => {
     }
 })
 
-function connectToUser(userID, stream) {
-    const vid = document.createElement('video');
-    const call = peer.call(userID, stream);
-    call.on('stream', returnStream => {
-        addVidStream(vid, returnStream);
-    });
+peer.on('open', id => {
+    socket.emit('join-room', roomID, id)
+})
+
+function connectToNewUser(userId, stream) {
+    const call = peer.call(userId, stream)
+    const video = document.createElement('video')
+    call.on('stream', userVideoStream => {
+        addVideoStream(video, userVideoStream)
+    })
     call.on('close', () => {
-        vid.remove();
-    });
-    peers[userID] = call;
+        video.remove()
+    })
+
+    peers[userId] = call
 }
 
-function addVidStream(vid, stream) {
-    vid.srcObject = stream;
-    vid.addEventListener('loadedmetadata', () => {
-        vid.play();
+function addVideoStream(video, stream) {
+    video.srcObject = stream
+    video.addEventListener('loadedmetadata', () => {
+        video.play()
     })
-    vidGrid.appendChild(vid);
+    videoGrid.append(video)
 }
