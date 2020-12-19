@@ -77,6 +77,6 @@ function callUser(userID) {
     if (myStream) {
         connectToNewUser(userID, myStream);
     } else {
-        callUser();
+        callUser(userID);
     }
 }
