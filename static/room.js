@@ -19,7 +19,7 @@ peer.on('open', (id) => {
 });
 
 peer.on('call', (call) => {
-
+    pickCall(call);
 });
 
 socket.on('user-connected', (userID) => {
@@ -61,7 +61,7 @@ function addVideoStream(video, stream) {
     videoGrid.append(video);
 }
 
-function pickCall() {
+function pickCall(call) {
     if (myStream) {
         call.answer(myStream);
         const video = document.createElement('video')
@@ -69,7 +69,7 @@ function pickCall() {
             addVideoStream(video, userVideoStream);
         })
     } else {
-        pickCall();
+        pickCall(call);
     }
 }
 
