@@ -39,6 +39,9 @@ socket.on('user-disconnected', (userID) => {
     if (peers[userID]) {
         peers[userID].close();
     }
+    if (videos[userID]) {
+        videos[userID].remove();
+    }
 });
 
 function connectToNewUser(userId, stream) {
@@ -47,10 +50,8 @@ function connectToNewUser(userId, stream) {
     call.on('stream', (userVideoStream) => {
         addVideoStream(video, userVideoStream);
     })
-    call.on('close', () => {
-        video.remove();
-    })
     peers[userId] = call;
+    videos[userId] = video;
 }
 
 function addVideoStream(video, stream) {
@@ -69,9 +70,8 @@ function pickCall(call) {
         call.on('stream', (userVideoStream) => {
             addVideoStream(video, userVideoStream);
         });
-        call.on('close', () => {
-            video.remove();
-        })
+        videos[call.peer] = video;
+        peers[userId] = call;
     } else {
         pickCall(call);
     }
