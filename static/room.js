@@ -4,18 +4,22 @@ const peer = new Peer();
 const peers = {};
 let myStream;
 
+const myVid = document.createElement('video')
+myVid.muted = true
+navigator.mediaDevices.getUserMedia({
+    video: true,
+    audio: true
+}).then(stream => {
+    myStream = stream;
+    addVideoStream(myVid, myStream);
+});
+
 peer.on('open', (id) => {
     socket.emit('join-room', id);
 });
 
 peer.on('call', (call) => {
-    if (myStream) {
-        call.answer(myStream);
-        const video = document.createElement('video')
-        call.on('stream', (userVideoStream) => {
-            addVideoStream(video, userVideoStream)
-        })
-    }
+
 });
 
 socket.on('user-connected', (userID) => {
@@ -23,9 +27,6 @@ socket.on('user-connected', (userID) => {
     let room_enter = document.createElement('div');
     room_enter.innerText = `${userID} has joined!`
     announceDiv.appendChild(room_enter);
-    if (myStream) {
-        connectToNewUser(userId, myStream);
-    }
 });
 
 socket.on('user-disconnected', (userID) => {
@@ -37,16 +38,6 @@ socket.on('user-disconnected', (userID) => {
         peers[userID].close();
     }
 });
-
-const myVid = document.createElement('video')
-myVid.muted = true
-navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: true
-}).then(stream => {
-    myStream = stream;
-    addVideoStream(myVid, myStream);
-})
 
 function connectToNewUser(userId, stream) {
     const call = peer.call(userId, stream);
@@ -67,4 +58,24 @@ function addVideoStream(video, stream) {
         video.play();
     })
     videoGrid.append(video);
+}
+
+function pickCall() {
+    if (myStream) {
+        call.answer(myStream);
+        const video = document.createElement('video')
+        call.on('stream', (userVideoStream) => {
+            addVideoStream(video, userVideoStream);
+        })
+    } else {
+        pickCall();
+    }
+}
+
+function callUser(userID) {
+    if (myStream) {
+        connectToNewUser(userID, myStream);
+    } else {
+        callUser();
+    }
 }
