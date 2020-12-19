@@ -2,6 +2,7 @@ const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
 const peer = new Peer();
 const peers = {};
+const videos = {}
 let myStream;
 
 const myVid = document.createElement('video')
@@ -49,7 +50,6 @@ function connectToNewUser(userId, stream) {
     call.on('close', () => {
         video.remove();
     })
-
     peers[userId] = call;
 }
 
@@ -67,6 +67,9 @@ function pickCall(call) {
         const video = document.createElement('video')
         call.on('stream', (userVideoStream) => {
             addVideoStream(video, userVideoStream);
+        });
+        call.on('close', () => {
+            video.remove();
         })
     } else {
         pickCall(call);
