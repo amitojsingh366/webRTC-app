@@ -40,7 +40,7 @@ socket.on('user-disconnected', (userID) => {
         peers[userID].close();
     }
     if (videos[userID]) {
-        videos[userID].remove();
+        videoGrid.removeChild(videos[userID]);
     }
 });
 
@@ -59,7 +59,7 @@ function addVideoStream(video, stream) {
     video.addEventListener('loadedmetadata', () => {
         video.play();
     })
-    videoGrid.append(video);
+    videoGrid.appendChild(video);
 }
 
 function pickCall(call) {
@@ -69,7 +69,6 @@ function pickCall(call) {
         call.on('stream', (userVideoStream) => {
             addVideoStream(video, userVideoStream);
         });
-        console.log(call.peer);
         videos[call.peer] = video;
         peers[call.peer] = call;
     } else {
