@@ -34,7 +34,7 @@ socket.on('user-connected', (userID) => {
 socket.on('user-disconnected', (userID) => {
     let announceDiv = document.getElementById('announcements');
     let room_leave = document.createElement('div');
-    room_enter.innerText = `${userID} has left`
+    room_leave.innerText = `${userID} has left`
     announceDiv.appendChild(room_leave);
     if (peers[userID]) {
         peers[userID].close();
