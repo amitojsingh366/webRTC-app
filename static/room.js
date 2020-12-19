@@ -63,15 +63,15 @@ function addVideoStream(video, stream) {
 }
 
 function pickCall(call) {
-    console.log(call);
     if (myStream) {
         call.answer(myStream);
         const video = document.createElement('video')
         call.on('stream', (userVideoStream) => {
             addVideoStream(video, userVideoStream);
         });
+        console.log(call.peer);
         videos[call.peer] = video;
-        peers[userId] = call;
+        peers[call.peer] = call;
     } else {
         pickCall(call);
     }
