@@ -62,6 +62,7 @@ function addVideoStream(video, stream) {
 }
 
 function pickCall(call) {
+    console.log(call);
     if (myStream) {
         call.answer(myStream);
         const video = document.createElement('video')
