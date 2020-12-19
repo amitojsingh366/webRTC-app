@@ -2,17 +2,30 @@ const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
 const peer = new Peer();
 const peers = {};
+let myStream;
 
-peer.on('open', id => {
+peer.on('open', (id) => {
     socket.emit('join-room', id);
 });
 
+peer.on('call', (call) => {
+    if (myStream) {
+        call.answer(myStream);
+        const video = document.createElement('video')
+        call.on('stream', (userVideoStream) => {
+            addVideoStream(video, userVideoStream)
+        })
+    }
+});
 
 socket.on('user-connected', (userID) => {
     let announceDiv = document.getElementById('announcements');
     let room_enter = document.createElement('div');
     room_enter.innerText = `${userID} has joined!`
     announceDiv.appendChild(room_enter);
+    if (myStream) {
+        connectToNewUser(userId, myStream);
+    }
 });
 
 socket.on('user-disconnected', (userID) => {
@@ -31,25 +44,14 @@ navigator.mediaDevices.getUserMedia({
     video: true,
     audio: true
 }).then(stream => {
-    addVideoStream(myVid, stream);
-
-    peer.on('call', call => {
-        call.answer(stream);
-        const video = document.createElement('video')
-        call.on('stream', (userVideoStream) => {
-            addVideoStream(video, userVideoStream)
-        })
-    });
-
-    socket.on('user-connected', userId => {
-        connectToNewUser(userId, stream);
-    });
+    myStream = stream;
+    addVideoStream(myVid, myStream);
 })
 
 function connectToNewUser(userId, stream) {
     const call = peer.call(userId, stream);
     const video = document.createElement('video')
-    call.on('stream', userVideoStream => {
+    call.on('stream', (userVideoStream) => {
         addVideoStream(video, userVideoStream);
     })
     call.on('close', () => {
@@ -62,7 +64,7 @@ function connectToNewUser(userId, stream) {
 function addVideoStream(video, stream) {
     video.srcObject = stream
     video.addEventListener('loadedmetadata', () => {
-        video.play()
+        video.play();
     })
-    videoGrid.append(video)
+    videoGrid.append(video);
 }
