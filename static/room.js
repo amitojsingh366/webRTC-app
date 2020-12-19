@@ -27,6 +27,7 @@ socket.on('user-connected', (userID) => {
     let room_enter = document.createElement('div');
     room_enter.innerText = `${userID} has joined!`
     announceDiv.appendChild(room_enter);
+    callUser();
 });
 
 socket.on('user-disconnected', (userID) => {
